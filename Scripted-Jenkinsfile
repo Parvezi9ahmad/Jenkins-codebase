@@ -1,13 +1,17 @@
-node {
-    def mvnPath
-    
-    stage('git clone process') {
-        git 'https://github.com/ashokitschool/maven-web-app.git'
+node('slave-1') {
+    def mvnHome
+    stage('Git Clone') {
+        git 'https://github.com/Parvezi9ahmad/Jenkins-codebase.git'
     }
     
-    stage('Maven build'){
-        def mvnHome = tool name:'maven', type:"maven";
-        mvnPath = "${mvnHome}/bin/mvn";
-        sh "${mvnPath} clean package"
-    }    
+    stage('Maven Build'){
+        def home = tool name:'maven-3.9.8',type:'maven'
+        mvnHome = "${home}/bin/mvn"
+        sh "${mvnHome} clean package"
+    }
+    stage('deployment'){
+         sshagent(['slave-2-credentials']) {
+    sh 'scp -o StrictHostKeyChecking=no target/maven-web-app.war ec2-user@13.232.206.97:/home/ec2-user/apache-tomcat-9.0.91/webapps'
+    }
+    }
 }
